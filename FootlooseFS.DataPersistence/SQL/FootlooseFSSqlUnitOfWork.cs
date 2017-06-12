@@ -11,10 +11,10 @@ namespace FootlooseFS.DataPersistence
 {
     public class FootlooseFSSqlUnitOfWork : IFootlooseFSUnitOfWork, IDisposable
     {
-        protected FootlooseFSDBContext _dbContext;
+        protected FootlooseFSSQLLocalDBContext _dbContext;
         protected SqlRepository<Member> _members;
         protected SqlRepository<MemberProfile> _memberProfiles;
-        protected SqlRepository<Person> _persons;
+        protected PersonRepository _persons;
         protected SqlRepository<Phone> _phones;
         protected SqlRepository<Address> _addresses;
         protected SqlRepository<PersonAddressAssn> _personAddressAssns;
@@ -25,7 +25,7 @@ namespace FootlooseFS.DataPersistence
 
         public FootlooseFSSqlUnitOfWork()
         {
-            _dbContext = new FootlooseFSDBContext();
+            _dbContext = new FootlooseFSSQLLocalDBContext();
         }
 
         public IRepository<Member> Members
@@ -50,12 +50,12 @@ namespace FootlooseFS.DataPersistence
             }
         }
 
-        public IRepository<Person> Persons
+        public IPersonRepository Persons
         {
             get
             {
                 if (_persons == null)
-                    _persons = new SqlRepository<Person>(_dbContext);
+                    _persons = new PersonRepository(_dbContext, this);
 
                 return _persons;
             }            

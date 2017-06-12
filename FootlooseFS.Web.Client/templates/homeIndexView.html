@@ -4,7 +4,7 @@
             <span class="accountheader">Accounts</span><br/><br/>
 
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped" id="accounttable">
                     <colgroup>
                         <col class="col-xs-1">
                         <col class="col-xs-1">
@@ -21,7 +21,7 @@
                     </thead>
                     <tbody>
                         <tr data-ng-repeat="a in Accounts">
-                            <td>{{ a.AccountID }}</td>
+                            <td>{{ a.AccountNumber }}</td>
                             <td>{{ a.AccountType }}</td>
                             <td>{{ a.AccountName }}</td>
                             <td style="text-align:right;">${{ a.AccountBalance | number }}</td>
@@ -37,7 +37,7 @@
             <span class="accountheader">Transactions</span><br/><br/>
 
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped" id="transactiontable">
                     <colgroup>
                         <col class="col-xs-1">
                         <col class="col-xs-1">

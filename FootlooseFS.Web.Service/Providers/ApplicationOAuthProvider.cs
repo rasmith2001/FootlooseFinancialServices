@@ -27,12 +27,12 @@ namespace FootlooseFS.Web.Service.Providers
         {
             context.OwinContext.Response.Headers.Add("Access-Control-Allow-Origin", new[] { "*" });
 
-            var service = new FootlooseFSService(new FootlooseFSSqlUnitOfWorkFactory());
+            var service = new FootlooseFSService(new FootlooseFSSqlUnitOfWorkFactory(), new FootlooseFSNotificationService());
 
-            var personId = service.GetPersonID(context.UserName, context.Password);
-            if (personId <= 0)
+            var loginStatus = service.Login(context.UserName, context.Password);
+            if (!loginStatus.Success)
             {
-                context.SetError("invalid_grant", "The username or password is incorrect.");
+                context.SetError("invalid_grant", loginStatus.Messages[0]);
                 return;
             }
 

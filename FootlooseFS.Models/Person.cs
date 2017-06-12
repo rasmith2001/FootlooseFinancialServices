@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FootlooseFS.Models
 {
+    [KnownType(typeof(PersonAccount))]
+    [KnownType(typeof(Phone))]
+    [KnownType(typeof(PersonAddressAssn))]
+    [KnownType(typeof(PersonLogin))]
     public class Person
     {
         public int PersonID { get; set; }
@@ -23,9 +28,9 @@ namespace FootlooseFS.Models
         [StringLength(100)]
         public string EmailAddress { get; set; }
 
-        public virtual ICollection<PersonAccount> Accounts { get; set; }
-        public virtual ICollection<Phone> Phones { get; set; }
-        public virtual ICollection<PersonAddressAssn> Addresses { get; set; }
+        public virtual List<PersonAccount> Accounts { get; set; }
+        public virtual List<Phone> Phones { get; set; }
+        public virtual List<PersonAddressAssn> Addresses { get; set; }
         public virtual PersonLogin Login { get; set; }
     }
 }

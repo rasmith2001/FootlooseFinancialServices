@@ -1,6 +1,6 @@
 ﻿module.factory('dataService', function ($http, $q) {
     var service = {};
-    var url = "****";
+    var url = config.serviceUrl;
 
     service.Login = function (username, password) {
         var loginRequest = "grant_type=password&username=" + username + "&password=" + password;
@@ -95,6 +95,20 @@
         }).
         error(function (data, status, headers, config) {
             deferred.reject('There was an error');
+        });
+
+        return deferred.promise;
+    }
+
+    service.Register = function (registerViewModel) {
+        var deferred = $q.defer();
+
+        $http.put(url + '/api/register/', registerViewModel, { headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem("accessToken") } }).
+        success(function (data, status, headers, config) {
+            deferred.resolve(data);
+        }).
+        error(function (data, status, headers, config) {
+            deferred.reject(data.ExceptionMessage);
         });
 
         return deferred.promise;

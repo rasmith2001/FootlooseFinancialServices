@@ -1,45 +1,44 @@
 ﻿using FootlooseFS.Models;
 using FootlooseFS.Service;
-using FootlooseFS.Service.Tests;
 using FootlooseFS.Web.AdminUI.Controllers;
-using FootlooseFS.Web.AdminUI.Models;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using FootlooseFS.Web.AdminUI.FootlooseFSEnterpriseService;
 using Moq;
-using Ninject;
-using System;
+using NUnit.Framework;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Web.Mvc;
 
 namespace FootlooseFS.Web.AdminUI.Tests
 {
-    [TestClass]
+    [TestFixture]
     public class PersonControllerTests
     {
-        private IFootlooseFSService footlooseFSService;
-        private Mock<IFootlooseFSService> mockFootlooseFSService;        
+        private Mock<IPersonService> mockPersonService;        
         private int pageIndex;
         private int pageSize;
         private int totalItemCount;
 
-        [TestInitialize]
+        [TestFixtureSetUp]
         public void SetupTests()
         {
-            mockFootlooseFSService = new Mock<IFootlooseFSService>();
+            mockPersonService = new Mock<IPersonService>();
 
             pageIndex = 0;
             pageSize = 10;
             totalItemCount = 100;
 
             // Create PersonDocument test data
-            PageOfList<PersonDocument> personDocuments = createTestData();            
+            PageOfList<PersonDocument> pageOfListPerson = createTestData();
+            var pageOfPersonDocuments = new PageOfPersonDocuments();
+            pageOfPersonDocuments.Data = pageOfListPerson.Data;
+            pageOfPersonDocuments.PageIndex = pageOfListPerson.PageIndex;
+            pageOfPersonDocuments.PageSize = pageOfListPerson.PageSize;
 
             // Mock SearchPersonDocument and UpdatePerson service methods
-            mockFootlooseFSService.Setup(m => m.SearchPersonDocuments(It.IsAny<int>(), It.IsAny<PersonSearchColumn>(), It.IsAny<SortDirection>(), It.IsAny<int>(), It.IsAny<Dictionary<PersonSearchColumn, string>>())).Returns(personDocuments);
-            mockFootlooseFSService.Setup(m => m.UpdatePerson(It.IsAny<Person>())).Returns((Person p) => { return SetupOperationStatus(p); });
+            mockPersonService.Setup(m => m.SearchPersons(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<SortDirection>(), It.IsAny<PersonDocument>())).Returns(pageOfPersonDocuments);
+            mockPersonService.Setup(m => m.UpdatePerson(It.IsAny<Person>())).Returns((Person p) => { return setupOperationStatus(p); });
         }
 
-        private OperationStatus SetupOperationStatus(Person p)
+        private OperationStatus setupOperationStatus(Person p)
         {
             var opStatus = new OperationStatus();
             opStatus.Data = p;
@@ -185,10 +184,10 @@ namespace FootlooseFS.Web.AdminUI.Tests
             return personDocumentPage;
         }
 
-        [TestMethod]
+        [Test]
         public void TestPersonSearch()
         {
-            PersonController personController = new PersonController(mockFootlooseFSService.Object);
+            PersonController personController = new PersonController(mockPersonService.Object);
 
             SearchParameters searchParameters = new SearchParameters();
             searchParameters.NumberRecordsPerPage = pageSize;
@@ -199,12 +198,12 @@ namespace FootlooseFS.Web.AdminUI.Tests
             ActionResult result = personController.Search(searchParameters);
 
             // Verify that the result is of type PartialViewResult
-            Assert.IsInstanceOfType(result, typeof(PartialViewResult));
+            Assert.IsInstanceOf<PartialViewResult>(result);
 
             var partialViewResult = result as PartialViewResult;          
 
             // Verify that the model of the result is PageOfList<PersonDocument>
-            Assert.IsInstanceOfType(partialViewResult.Model, typeof(PageOfList<PersonDocument>));
+            Assert.IsInstanceOf<PageOfList<PersonDocument>>(partialViewResult.Model);
 
             var personPage = partialViewResult.Model as PageOfList<PersonDocument>;
 
@@ -212,56 +211,21 @@ namespace FootlooseFS.Web.AdminUI.Tests
             Assert.AreEqual(personPage.Data.Count, 10);
         }
 
-        [TestMethod]
+        [Test]
         public void TestPersonSave()
         {
-            PersonController personController = new PersonController(mockFootlooseFSService.Object);
+            PersonController personController = new PersonController(mockPersonService.Object);
 
-            FormCollection formCollection = new FormCollection();
-            formCollection.Add("personID", "1");
-            formCollection.Add("firstName", "Pam");
-            formCollection.Add("lastName", "Scicchitano");
-            formCollection.Add("emailAddress", "pam@scicchitano.com");
+            var person = new Person();
+            person.PersonID = 1;            
+            person.FirstName = "Pam";
+            person.LastName = "Scicchitano";
+            person.EmailAddress = "pam@scicchitano.com";
 
-            formCollection.Add("homePhone", "336-418-5000");
-            formCollection.Add("workPhone", "336-418-4000");
-            formCollection.Add("cellPhone", "336-418-3000");
+            ActionResult result = personController.Save(person);
 
-            formCollection.Add("homeAddressID", "1");
-            formCollection.Add("homeStreetAddress", "38 S Dunworth St #4185");
-            formCollection.Add("homeCity", "Raleigh");
-            formCollection.Add("homeState", "NC");
-            formCollection.Add("homeZip", "27215");
-
-            formCollection.Add("workAddressID", "2");
-            formCollection.Add("workStreetAddress", "38 S Dunworth St #4185");
-            formCollection.Add("workCity", "Raleigh");
-            formCollection.Add("workState", "NC");
-            formCollection.Add("workZip", "27215");
-
-            formCollection.Add("altAddressID", "1");
-            formCollection.Add("altStreetAddress", "38 S Dunworth St #4185");
-            formCollection.Add("altCity", "Raleigh");
-            formCollection.Add("altState", "NC");
-            formCollection.Add("altZip", "27215");
-
-            ActionResult result = personController.Save(formCollection);
-
-            // Verify that the result is of type JsonResult
-            Assert.IsInstanceOfType(result, typeof(JsonResult));
-
-            var jsonResult = result as JsonResult;
-
-            // Verify that the model of the result is SavePersonResult
-            Assert.IsInstanceOfType(jsonResult.Data, typeof(SavePersonResult));
-
-            var savePersonResult = jsonResult.Data as SavePersonResult;
-
-            // Verify that Person object returned from the OperationStatus has the data provided from the form
-            Assert.AreEqual(savePersonResult.Person.PersonID, 1);
-            Assert.AreEqual(savePersonResult.Person.FirstName, "Pam");
-            Assert.AreEqual(savePersonResult.Person.LastName, "Scicchitano");
-            Assert.AreEqual(savePersonResult.Person.EmailAddress, "pam@scicchitano.com");
+            // Verify that the result is of type ContentResult
+            Assert.IsInstanceOf<ContentResult>(result);
         }
     }
 }

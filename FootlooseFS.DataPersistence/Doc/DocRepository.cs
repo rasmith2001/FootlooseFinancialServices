@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using MongoDB.Bson;
 using MongoDB.Driver.Linq;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -13,7 +10,7 @@ using FootlooseFS.Models;
 
 namespace FootlooseFS.DataPersistence
 {
-    public class DocRepository<T> : IRepository<T> where T : class
+    public abstract class DocRepository<T> : BaseRepository<T>, IRepository<T> where T : class
     {
         private MongoDatabase _database;
         private string _tableName;
@@ -29,41 +26,38 @@ namespace FootlooseFS.DataPersistence
 
         #region IRepository<T> Members
 
-        public virtual void Add(T entity)
+        public override void Add(T entity)
         {
             _collection.Insert(entity);
         }
 
-        public virtual void AddBatch(IEnumerable<T> entities)
+        public override void AddBatch(IEnumerable<T> entities)
         {
             _collection.InsertBatch(entities);
         }
 
-        public virtual void Delete(T entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual void Delete(Expression<Func<T,int>> queryExpression, int id)
+        public override void Delete(Expression<Func<T,int>> queryExpression, int id)
         {
             var query = Query<T>.EQ(queryExpression, id);
             _collection.Remove(query);          
         }
 
-        public virtual void DeleteAll()
+        public override void DeleteAll()
         {
             _collection.RemoveAll();
         }
 
-        public virtual void Update(T entity)
+        public override T Update(T entity)
         {
             _collection.Save(entity);
+
+            return entity;
         }
 
-        public virtual IQueryable<T> GetQueryable()
+        public override IQueryable<T> GetQueryable()
         {
             return _collection.AsQueryable<T>();
-        }
+        }              
 
         #endregion
     }

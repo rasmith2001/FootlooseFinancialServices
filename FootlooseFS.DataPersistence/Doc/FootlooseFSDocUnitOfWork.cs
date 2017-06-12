@@ -1,13 +1,7 @@
 ﻿using FootlooseFS.Models;
-using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Bson.Serialization;
+using FootlooseFS.DataPersistence.Doc;
 
 namespace FootlooseFS.DataPersistence
 {
@@ -31,26 +25,10 @@ namespace FootlooseFS.DataPersistence
             get
             {
                 if (_persons == null)
-                    _persons = new DocRepository<PersonDocument>(_database, "persons");
+                    _persons = new PersonDocumentRepository(_database, "persons");
 
                 return _persons;
             }
         }        
-
-        public static void Init()
-        {
-            BsonClassMap.RegisterClassMap<PersonDocument>(cm =>
-            {
-                cm.MapIdProperty(p => p.PersonID);
-                cm.MapProperty(p => p.FirstName);
-                cm.MapProperty(p => p.LastName);
-                cm.MapProperty(p => p.EmailAddress);
-                cm.MapProperty(p => p.PhoneNumber);
-                cm.MapProperty(p => p.StreetAddress);
-                cm.MapProperty(p => p.City);
-                cm.MapProperty(p => p.State);
-                cm.MapProperty(p => p.Zip);
-            });
-        }
     }
 }

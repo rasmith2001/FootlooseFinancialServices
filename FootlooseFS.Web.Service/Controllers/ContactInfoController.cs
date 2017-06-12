@@ -19,7 +19,7 @@ namespace FootlooseFS.Web.Service.Controllers
         public ContactInfoViewModel Get()
         {
             // Get Person data model from the data service
-            var person = service.GetPerson(authenticatedUser, new PersonIncludes { Accounts = false, Addressses = true, Phones = true, AccountTransactions = false });
+            var person = service.GetPersonByUsername(authenticatedUser, new PersonIncludes { Accounts = false, Addressses = true, Phones = true, AccountTransactions = false });
 
             // Create a Holder view model and populate data from Person data model
             var contactInfo = new ContactInfoViewModel();           
@@ -37,16 +37,6 @@ namespace FootlooseFS.Web.Service.Controllers
                                         AddressTypeID = a.AddressTypeID
                                     }).ToList();
 
-            if (!contactInfo.Addresses.Any(a => a.Type == "Work"))
-            {
-                contactInfo.Addresses.Add(new AddressViewModel
-                {
-                    AddressID = 0,
-                    Type = "Work",
-                    AddressTypeID = 2
-                });
-            }
-
             contactInfo.PhoneNumbers = (from p in person.Phones
                                    select new PhoneViewModel
                                    {
@@ -54,27 +44,7 @@ namespace FootlooseFS.Web.Service.Controllers
                                        PhoneTypeID = p.PhoneTypeID,
                                        Number = p.Number
                                    }).ToList();
-
-            if (!contactInfo.PhoneNumbers.Any(a => a.PhoneType == "Office"))
-            {
-                contactInfo.PhoneNumbers.Add(new PhoneViewModel
-                {                   
-                    PhoneType = "Office",
-                    PhoneTypeID = 2,
-                    Number = string.Empty
-                });
-            }
-
-            if (!contactInfo.PhoneNumbers.Any(a => a.PhoneType == "Cell"))
-            {
-                contactInfo.PhoneNumbers.Add(new PhoneViewModel
-                {
-                    PhoneType = "Cell",
-                    PhoneTypeID = 3,
-                    Number = string.Empty
-                });
-            }
-
+            
             return contactInfo;
         }
 
@@ -83,7 +53,7 @@ namespace FootlooseFS.Web.Service.Controllers
         {
             // Get Person data model from the data service
             // we do not need account nor transactions
-            var person = service.GetPerson(authenticatedUser, new PersonIncludes { Accounts = false, Addressses = false, Phones = false, AccountTransactions = false });
+            var person = service.GetPersonByUsername(authenticatedUser, new PersonIncludes { Accounts = false, Addressses = false, Phones = false, AccountTransactions = false });
 
             // Update the Email Address in the person model
             person.EmailAddress = contactInfoViewModel.EmailAddress;
